@@ -4,13 +4,13 @@
 #include <string.h>
 
 /* Addresses in the BIOS Data Area, relative to segment 0. */
-#define BDA_COLUMNS         0x44A  /* 16-bit word */
-#define BDA_FRAME_SIZE      0x44C  /* 16-bit word */
-#define BDA_CRTC_PORT       0x463  /* word, VGA CRT Controller I/O port */
-#define BDA_LINES_MINUS_ONE 0x484  /* byte */
+#define BDA_COLUMNS         0x44A       /* 16-bit word */
+#define BDA_FRAME_SIZE      0x44C       /* 16-bit word */
+#define BDA_CRTC_PORT       0x463       /* word, VGA CRT Controller I/O port */
+#define BDA_LINES_MINUS_ONE 0x484       /* byte */
 
 /* VGA CRT registers. */
-#define VGA_CRTC_NUM_REGISTERS 25  /* Number of registers of the VGA CRTC. */
+#define VGA_CRTC_NUM_REGISTERS 25       /* Number of registers of the VGA CRTC. */
 #define VGA_CRTC_H_TOTAL       0
 #define VGA_CRTC_H_DISP        1
 #define VGA_CRTC_H_BLANK_START 2
@@ -81,22 +81,30 @@
 #endif
 
 #ifdef __BCC__
-void _disable(void) {
+void
+_disable(void)
+{
     asm("cli");
 }
 
-void _enable(void) {
+void
+_enable(void)
+{
     asm("sti");
 }
 
-int inp(unsigned port) {
+int
+inp(unsigned port)
+{
     asm("mov bx, sp");
     asm("mov dx, [bx+2]");
     asm("in al, dx");
     asm("mov ah, #0");
 }
 
-void outp(unsigned port, int value) {
+void
+outp(unsigned port, int value)
+{
     asm("mov bx, sp");
     asm("mov dx, [bx+2]");
     asm("mov al, [bx+4]");
@@ -105,7 +113,9 @@ void outp(unsigned port, int value) {
 #endif
 
 /* Read a byte from the given segment and offset in memory. */
-unsigned char read_byte(unsigned seg, unsigned off) {
+unsigned char
+read_byte(unsigned seg, unsigned off)
+{
 #ifdef __BCC__
     unsigned char c = 0;
     movedata(seg, off, __get_ds(), &c, 1);
@@ -117,7 +127,9 @@ unsigned char read_byte(unsigned seg, unsigned off) {
 }
 
 /* Write a byte to the given segment and offset in memory. */
-void write_byte(unsigned seg, unsigned off, unsigned char value) {
+void
+write_byte(unsigned seg, unsigned off, unsigned char value)
+{
 #ifdef __BCC__
     movedata(__get_ds(), &value, seg, off, 1);
 #else
@@ -127,18 +139,24 @@ void write_byte(unsigned seg, unsigned off, unsigned char value) {
 }
 
 /* Read a 16-bit word from the given segment and offset in memory. */
-unsigned read_word(unsigned seg, unsigned off) {
+unsigned
+read_word(unsigned seg, unsigned off)
+{
     return read_byte(seg, off) | ((unsigned)read_byte(seg, off + 1) << 8);
 }
 
 /* Write a 16-bit word to the given segment and offset in memory. */
-void write_word(unsigned seg, unsigned off, unsigned value) {
+void
+write_word(unsigned seg, unsigned off, unsigned value)
+{
     write_byte(seg, off, value & 0xff);
     write_byte(seg, off + 1, value >> 8);
 }
 
 /* Read a VGA register from a given port. */
-int read_vga(unsigned port, int reg) {
+int
+read_vga(unsigned port, int reg)
+{
     int value;
     _disable();
     outp(port, reg);
@@ -148,20 +166,26 @@ int read_vga(unsigned port, int reg) {
 }
 
 /* Write to a VGA register at a given port. */
-void write_vga(unsigned port, int reg, int value) {
+void
+write_vga(unsigned port, int reg, int value)
+{
     _disable();
     outp(port, reg);
     outp(port + 1, value);
     _enable();
 }
 
-void set_mode3(void) {
+void
+set_mode3(void)
+{
     union REGS regs;
     regs.x.ax = 3;
     int86(0x10, &regs, &regs);
 }
 
-void read_crtc_registers(unsigned char *crtc_regs) {
+void
+read_crtc_registers(unsigned char *crtc_regs)
+{
     unsigned vga_crt = read_word(0, BDA_CRTC_PORT);
     int i;
 
@@ -170,14 +194,16 @@ void read_crtc_registers(unsigned char *crtc_regs) {
     }
 }
 
-void write_crtc_registers(unsigned char *crtc_regs) {
+void
+write_crtc_registers(unsigned char *crtc_regs)
+{
     unsigned vga_crt = read_word(0, BDA_CRTC_PORT);
     int i;
     unsigned char value;
 
     /* FIXME: should disable interrupts and blank display before messing with CRTC registers */
     value = crtc_regs[VGA_CRTC_V_SYNC_END];
-    value &= 0x7f;  /* Disable register write protection. */
+    value &= 0x7f;      /* Disable register write protection. */
     write_vga(vga_crt, VGA_CRTC_V_SYNC_END, value);
 
     for (i = 0; i < VGA_CRTC_NUM_REGISTERS; i++) {
@@ -186,7 +212,9 @@ void write_crtc_registers(unsigned char *crtc_regs) {
 }
 
 /* Print the current values of all VGA CRT Controller registers. */
-void dump_vga_state(void) {
+void
+dump_vga_state(void)
+{
     unsigned char crtc_regs[VGA_CRTC_NUM_REGISTERS];
     int i;
 
@@ -198,7 +226,9 @@ void dump_vga_state(void) {
 }
 
 /* Set a text mode with an arbitrary number of columns and lines. */
-int set_text_mode(unsigned columns, unsigned lines, int dry_run) {
+int
+set_text_mode(unsigned columns, unsigned lines, int dry_run)
+{
     unsigned char crtc_regs[VGA_CRTC_NUM_REGISTERS];
     unsigned char value;
     unsigned height_minus_one;
@@ -219,7 +249,7 @@ int set_text_mode(unsigned columns, unsigned lines, int dry_run) {
     height_minus_one = lines * FONT_HEIGHT - 1;
 
     if (!dry_run) {
-        set_mode3();  /* Let the BIOS do the heavy lifting. */
+        set_mode3();    /* Let the BIOS do the heavy lifting. */
     }
     read_crtc_registers(crtc_regs);
 
@@ -228,13 +258,15 @@ int set_text_mode(unsigned columns, unsigned lines, int dry_run) {
     crtc_regs[VGA_CRTC_OFFSET] = columns / 2;
 
     /* Set the number of lines. */
-    value = height_minus_one & 0xff;  /* Lower 8 bits. */
+    value = height_minus_one & 0xff;    /* Lower 8 bits. */
     crtc_regs[VGA_CRTC_V_DISP_END] = value;
     value = crtc_regs[VGA_CRTC_OVERFLOW];
-    value &= 0xbd;  /* Set bits #1 and #6 to 0. */
+    value &= 0xbd;      /* Set bits #1 and #6 to 0. */
     /* Copy the top two bits (bit #8 and #9) of the screen height into bits #1
      * and #6 of the register. */
-    value |= ((height_minus_one >> 8) & 1) * 2 + ((height_minus_one >> 9) & 1) * 0x40;
+    value |=
+        ((height_minus_one >> 8) & 1) * 2 +
+        ((height_minus_one >> 9) & 1) * 0x40;
     crtc_regs[VGA_CRTC_OVERFLOW] = value;
 
     if (!dry_run) {
@@ -243,17 +275,21 @@ int set_text_mode(unsigned columns, unsigned lines, int dry_run) {
 
         /* Update the BIOS data area to keep in sync with the new settings. */
         write_word(0, BDA_COLUMNS, columns);
-        write_word(0, BDA_FRAME_SIZE, columns * lines * 2);  /* FIXME: this should probably be a divisor of 32kB */
+        write_word(0, BDA_FRAME_SIZE, columns * lines * 2);     /* FIXME: this should probably be a divisor of 32kB */
         write_byte(0, BDA_LINES_MINUS_ONE, lines - 1);
     }
     return 0;
 }
 
-void print_help(FILE *fp) {
+void
+print_help(FILE *fp)
+{
     fputs("Usage: FIXME\n", fp);
 }
 
-int main(int argc, char **argv) {
+int
+main(int argc, char **argv)
+{
     int flag_dump_state = 0, flag_help = 0, flag_unknown = 0;
     int flag_dry_run = 0, flag_verbose = 0;
     unsigned columns = 80, lines = 25;
