@@ -72,7 +72,7 @@ compatible with BigVGA text modes provided that they don't hardcode the number
 of columns and lines to be 80x25 and instead read the actual values from the
 BIOS Data Area and/or from a BIOS Int 10/AH=0Fh call.
 
-Low-level programs like mouse drivers and NANSI.SYS should also be fully
+Low-level programs like mouse drivers and `NANSI.SYS` should also be fully
 compatible with BigVGA text modes.
 
 So far most testing has been done in QEMU, compatibility with more emulators
@@ -85,6 +85,25 @@ running BigVGA.
 
 Since BigVGA modes use a very low refresh rate they will likely never be
 compatible with real CRT screens over a VGA connector.
+
+Prior art
+---------
+
+The FreeDOS **mode** command can also change text mode resolution (e.g. `mode
+con cols=80 lines=28`) however it only uses standard BIOS calls and is limited
+to a few available modes. On VGA adapters the "mode" command never exceeds a
+resolution of 720x400 pixels for maximum hardware compatibility, so for example
+the 80x50 mode is achieved by using a small 9x8 font, while BigVGA uses the
+standard VGA 9x16 font and for the same 80x50 mode offers a much bigger screen
+size in emulators.
+
+The **wtm** (Windowed Text Mode) program by Jason Hood works in a very similar
+way to BigVGA but provides more limited hardware and emulator compatibility.
+It's available at: http://adoxa.altervista.org/tm/
+
+The **SVGATextMode** program for Linux and DOS has similar goals but requires
+a supported SVGA adapter to go beyond the usual VGA text modes:
+http://freshmeat.sourceforge.net/projects/svgatextmode
 
 Contributing
 ------------
