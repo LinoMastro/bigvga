@@ -1,3 +1,13 @@
+/* WARNING: this is still at the work-in-progres proof-of-concept stage.
+ * BigVGA library and command-line tool to set high-resolution text modes in
+ * FreeDOS and other DOS-compatible systems.
+ *
+ * For more information see README.md.
+ *
+ * The latest version of BigVGA is available at:
+ * https://github.com/LinoMastro/bigvga
+ */
+
 #include <conio.h>
 #include <dos.h>
 #include <stdio.h>
@@ -149,18 +159,18 @@ read_word(unsigned seg, unsigned off)
 void
 write_word(unsigned seg, unsigned off, unsigned value)
 {
-    write_byte(seg, off, value & 0xff);
-    write_byte(seg, off + 1, value >> 8);
+    write_byte(seg, off, (unsigned char)(value & 0xff));
+    write_byte(seg, off + 1, (unsigned char)(value >> 8));
 }
 
 /* Read a VGA register from a given port. */
-int
+unsigned char
 read_vga(unsigned port, int reg)
 {
-    int value;
+    unsigned char value;
     _disable();
     outp(port, reg);
-    value = inp(port + 1);
+    value = (unsigned char)inp(port + 1);
     _enable();
     return value;
 }
@@ -254,11 +264,11 @@ set_text_mode(unsigned columns, unsigned lines, int dry_run)
     read_crtc_registers(crtc_regs);
 
     /* Set the number of columns. */
-    crtc_regs[VGA_CRTC_H_DISP] = columns - 1;
-    crtc_regs[VGA_CRTC_OFFSET] = columns / 2;
+    crtc_regs[VGA_CRTC_H_DISP] = (unsigned char)(columns - 1);
+    crtc_regs[VGA_CRTC_OFFSET] = (unsigned char)(columns / 2);
 
     /* Set the number of lines. */
-    value = height_minus_one & 0xff;    /* Lower 8 bits. */
+    value = (unsigned char)(height_minus_one & 0xff);    /* Lower 8 bits. */
     crtc_regs[VGA_CRTC_V_DISP_END] = value;
     value = crtc_regs[VGA_CRTC_OVERFLOW];
     value &= 0xbd;      /* Set bits #1 and #6 to 0. */
@@ -276,7 +286,7 @@ set_text_mode(unsigned columns, unsigned lines, int dry_run)
         /* Update the BIOS data area to keep in sync with the new settings. */
         write_word(0, BDA_COLUMNS, columns);
         write_word(0, BDA_FRAME_SIZE, columns * lines * 2);     /* FIXME: this should probably be a divisor of 32kB */
-        write_byte(0, BDA_LINES_MINUS_ONE, lines - 1);
+        write_byte(0, BDA_LINES_MINUS_ONE, (unsigned char)(lines - 1));
     }
     return 0;
 }
