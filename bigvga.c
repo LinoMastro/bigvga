@@ -13,6 +13,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "bigvga.h"
+
 /* Addresses in the BIOS Data Area, relative to segment 0. */
 #define BDA_COLUMNS         0x44A       /* 16-bit word */
 #define BDA_FRAME_SIZE      0x44C       /* 16-bit word */
@@ -287,71 +289,6 @@ set_text_mode(unsigned columns, unsigned lines, int dry_run)
         write_word(0, BDA_COLUMNS, columns);
         write_word(0, BDA_FRAME_SIZE, columns * lines * 2);     /* FIXME: this should probably be a divisor of 32kB */
         write_byte(0, BDA_LINES_MINUS_ONE, (unsigned char)(lines - 1));
-    }
-    return 0;
-}
-
-void
-print_help(FILE *fp)
-{
-    fputs("Usage: FIXME\n", fp);
-}
-
-int
-main(int argc, char **argv)
-{
-    int flag_dump_state = 0, flag_help = 0, flag_unknown = 0;
-    int flag_dry_run = 0, flag_verbose = 0;
-    unsigned columns = 80, lines = 25;
-    int i;
-
-    for (i = 1; i < argc; i++) {
-        if ((argv[i][0] == '/' || argv[i][0] == '-') && argv[i][2] == '\0') {
-            switch (argv[i][1]) {
-                case '?':
-                case 'h':
-                    flag_help = 1;
-                    break;
-                case 'd':
-                    flag_dump_state = 1;
-                    break;
-                case 'n':
-                    flag_dry_run = 1;
-                    break;
-                case 'v':
-                    flag_verbose = 1;
-                    break;
-                default:
-                    flag_unknown = 1;
-                    break;
-            }
-        } else {
-            /* Parse an argument in the form NNNxNNN. */
-            if (sscanf(argv[i], "%ux%u", &columns, &lines) != 2) {
-                flag_unknown = 1;
-            }
-        }
-    }
-    if (flag_unknown) {
-        fputs("Error: invalid command arguments.\n\n", stderr);
-        print_help(stderr);
-        return 1;
-    }
-    if (flag_help || argc == 1) {
-        print_help(stdout);
-        return 1;
-    }
-    if (flag_dump_state) {
-        dump_vga_state();
-        return 0;
-    }
-    printf("Setting text mode %ux%u\n", columns, lines);
-    if (set_text_mode(columns, lines, flag_dry_run)) {
-        fputs("Error: invalid number of columns or lines.\n\n", stderr);
-        print_help(stderr);
-        return 1;
-    } else {
-        printf("Text mode %ux%u\n", columns, lines);
     }
     return 0;
 }
