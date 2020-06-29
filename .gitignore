@@ -1,0 +1,33 @@
+#  Object Files
+*.OBJ
+*.obj
+
+# List Files
+*.LST
+*.lst
+
+# Map files
+*.MAP
+*.map
+*.SYM
+*.sym
+
+# Executable files
+*.EXE
+*.exe
+*.COM
+*.com
+
+# Bin files
+*.BIN
+*.bin
+
+# Libraries
+*.LIB
+*.lib
+
+# backup files
+*.orig
+*~
+*.diff
+*.rej
