@@ -5,16 +5,26 @@ BigVGA is a library and a command-line tool to set high-resolution text modes
 in FreeDOS and other DOS-compatible systems.
 
 WARNING: this is still at the work-in-progres proof-of-concept stage but basic
-functionality should already work in QEMU. Try e.g. "bigvga.exe 136x43" to set
+functionality should already work in QEMU. Try e.g. `bigvga.exe 136x43` to set
 a text mode with 136 columns and 43 lines (and approximate 16:9 aspect ratio)
 in QEMU. Revert to a normal 80x25 text mode by running the DOS command
-"mode co80" or rebooting your system.
+`mode co80` or rebooting your system.
 
 Unlike other projects that rely on SuperVGA hardware, BigVGA only uses basic
 VGA features.
 
 The main target is emulators (e.g. qemu, dosbox, dosemu, bochs...) but it might
 also work on some laptops or LCD screens.
+
+Emulator-specific details
+-------------------------
+
+QEMU by default resizes its window in response to screen resize requests from
+BigVGA, however if you manually change the QEMU window size all subsequent
+requests from BigVGA will only change the state inside the emulator and QEMU
+will scale the text to fit into the window size that you previously set. A
+downside of this scaling is that text will appear blurry. To switch back the
+QEMU window to the "native" unscaled dimensions press CTRL-ALT-U.
 
 Download
 --------
