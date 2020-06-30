@@ -1,3 +1,10 @@
+# Build a BigVGA executable using the Travis CI (https://travis-ci.org/)
+# service, by compiling the code with gcc-ia16 on Ubuntu 18.04.4 LTS (Bionic
+# Beaver).
+#
+# The Ubuntu binaries for gcc-ia16 and libi86 are installed from:
+# https://launchpad.net/~tkchia/+archive/ubuntu/build-ia16
+
 os: linux
 dist: bionic
 sudo: required
