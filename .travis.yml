@@ -1,0 +1,13 @@
+os: linux
+dist: bionic
+sudo: required
+language: c
+
+addons:
+  apt:
+    sources:
+      - sourceline: 'ppa:tkchia/build-ia16'
+    packages:
+      - gcc-ia16-elf libi86-ia16-elf
+
+script: make
